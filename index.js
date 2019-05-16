@@ -15,7 +15,7 @@ exports.handler = (event, context, callback) => {
             if (!err) {
                 console.log("Successfully got object");
 
-                callback(null, 'Downloader');
+                callback(null, data.Body);
             } else {
                 console.log(err);
 
