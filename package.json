@@ -1,0 +1,17 @@
+{
+  "name": "entry-point",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.456.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "zip": "npm run delete:zip && npm run create:zip",
+    "delete:zip": "rm ./archive.zip",
+    "create:zip": "zip -r archive.zip ./node_modules/ ./index.js  ./package-lock.json ./package.json"
+  },
+  "author": "",
+  "license": "ISC"
+}
