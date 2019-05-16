@@ -62,8 +62,8 @@ exports.handler = (event, context, callback) => {
                         }
 
                         const report = response[0];
-
-                        params.Key = report.S3Location;
+                        const a = report.S3Location
+                        params.Key = a.substr(a.indexOf('jsonReports'));
 
                         s3.getObject(params, function (err, data) {
                             if (!err) {
