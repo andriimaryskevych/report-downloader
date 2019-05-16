@@ -5,6 +5,14 @@ const s3 = new AWS.S3();
 const itemKey = 'jsonReports/report_2019_05_13.json';
 const bucketName = 'teststoragereports';
 
+const JSONserializer = JSONresponse => JSONresponse;
+const XMLserializer = JSONresponse => jsonxml(JSON.parse(JSONresponse));
+
+const serizlizerMap = {
+    'json': JSONserializer,
+    'xml': XMLserializer
+};
+
 exports.handler = (event, context, callback) => {
     try {
         var params = {
@@ -17,13 +25,13 @@ exports.handler = (event, context, callback) => {
                 console.log("Successfully got object");
 
                 const jsonResponse = data.Body.toString();
-                let response;
+                const {
+                    type,
+                    id
+                } = event;
 
-                if (false) {
-                    response = jsonResponse;
-                } else {
-                    response = jsonxml(JSON.parse(jsonResponse));
-                }
+                const serizlizer = serizlizerMap[type] || serizlizerMap.json;
+                const response = serizlizer(jsonResponse);
 
                 callback(null, response);
             } else {
@@ -32,7 +40,6 @@ exports.handler = (event, context, callback) => {
                 throw error;
             }
         });
-
     } catch (error) {
         console.log('Error occured', error);
 
