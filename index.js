@@ -8,7 +8,7 @@ exports.handler = (event, context, callback) => {
     try {
         var params = {
             Bucket: bucketName,
-            Key: keyName
+            Key: itemKey
         };
 
         s3.getObject(params, function (err, data) {
