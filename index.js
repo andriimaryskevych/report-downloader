@@ -24,6 +24,12 @@ const serizlizerMap = {
 
 exports.handler = (event, context, callback) => {
     try {
+        const sendErrorResponse = error => {
+            sql.close();
+
+            callback(error);
+        };
+
         var params = {
             Bucket: bucketName,
             Key: itemKey
@@ -34,13 +40,30 @@ exports.handler = (event, context, callback) => {
             id
         } = event;
 
-        let query = `SELECT * FROM ReportsMetadata WHERE ID = ${id}`;
-        sql.connect(config, function(err, pool) {
+        if (isNaN(Number(id))) {
+            sendErrorResponse(new Error('Failed parsing id'));
+        }
+
+        let query = `SELECT * FROM ReportsMetadata WHERE ID = ${Number(id)}`;
+
+        console.log('Query', query);
+
+        sql.connect(config, function(err) {
             if (!err) {
-                pool.request().query(query, function(err, res) {
+                new sql.Request().query(query, function(err, res) {
                     if (!err) {
-                        const resopnse = res.recordset;
-                        params.Key = resopnse.S3Location;
+                        const response = res.recordset;
+
+                        console.log('Response', response);
+
+                        if (response.length === 0) {
+                            console.log('Report not found');
+                            sendErrorResponse(new Error('Report not found'));
+                        }
+
+                        const report = response[0];
+
+                        params.Key = report.S3Location;
 
                         s3.getObject(params, function (err, data) {
                             if (!err) {
@@ -49,23 +72,25 @@ exports.handler = (event, context, callback) => {
                                 const jsonResponse = data.Body.toString();
 
                                 const serizlizer = serizlizerMap[type] || serizlizerMap.json;
-                                const response = serizlizer(jsonResponse);
+                                const serviceResponse = serizlizer(jsonResponse);
 
-                                callback(null, response);
+                                sql.close();
+
+                                callback(null, serviceResponse);
                             } else {
                                 console.log();
 
-                                callback(err);
+                                sendErrorResponse(err);
                             }
                         });
                     } else {
                         console.log('Error fetching data from sql');
-                        callback(err);
+                        sendErrorResponse(err);
                     }
                 });
             } else {
                 console.log('Error creating SQL connection');
-                callback(err);
+                sendErrorResponse(err);
             }
         });
     } catch (error) {
