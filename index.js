@@ -1,11 +1,6 @@
 exports.handler = (event, context, callback) => {
     try {
-        callback(null, [
-            {
-                id: 1,
-                s3_location: 'here'
-            }
-        ]);
+        callback(null, 'Downloader');
     } catch (error) {
         console.log('Error occured', error);
 
