@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const jsonxml = require('jsontoxml');
 const s3 = new AWS.S3();
 
 const itemKey = 'jsonReports/report_2019_05_13.json';
@@ -15,7 +16,16 @@ exports.handler = (event, context, callback) => {
             if (!err) {
                 console.log("Successfully got object");
 
-                callback(null, data.Body.toString());
+                const jsonResponse = data.Body.toString();
+                let response;
+
+                if (false) {
+                    response = jsonResponse;
+                } else {
+                    response = jsonxml(JSON.parse(jsonResponse));
+                }
+
+                callback(null, response);
             } else {
                 console.log(err);
 
